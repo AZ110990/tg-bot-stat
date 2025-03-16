@@ -39,7 +39,7 @@ def work_with_data(call):
 
 def save_data(message):
     value = int(message.text)
-    date_for_value = date.today().strftime("%d.%m.%Y")
+    date_for_value = date.today().strftime("%m.%d.%Y")
     bot.send_message(chat_id=message.chat.id, text=f"data for saving {date_for_value}")
     # put_data(date_for_value,value)
     
