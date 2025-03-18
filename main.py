@@ -1,7 +1,6 @@
 import os
 import telebot
 from telebot import types
-from datetime import date
 from data_manager import *
 
 from dotenv import load_dotenv
@@ -38,11 +37,13 @@ def work_with_data(call):
                           reply_markup=keyboard)
 
 def save_data(message):
-    value = int(message.text)
-    date_for_value = date.today().strftime("%m.%d.%Y")
-    bot.send_message(chat_id=message.chat.id, text=f"data for saving {date_for_value}")
-    # put_data(date_for_value,value)
-    
+    try:
+        value = int(message.text)
+    except ValueError:
+        bot.send_message(chat_id=message.chat.id, text=f"Напишите цифру, не текст")
+    else:
+        notification = put_data(value)
+        bot.send_message(chat_id=message.chat.id, text=notification)
 
 # --------------------- bot ---------------------
 @bot.message_handler(commands=['start'])
@@ -78,31 +79,23 @@ def button_handler(call):
     bot.answer_callback_query(callback_query_id=call.id)
     if call.data == "data":
         dialog.mode = "data"
-        work_with_data(call)
-        # bot.send_message(chat_id=call.message.chat.id, text='you have opt data')
+        keyboard = keyboard_data()
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                              text='Вы выбрали работу с данными. Что хотите сделать?:',
+                              reply_markup=keyboard)
     elif call.data == "eggs":
         dialog.mode = "eggs"
         bot.send_message(chat_id=call.message.chat.id, text='Напишите число яиц:')
         bot.register_next_step_handler(call.message, save_data)
     elif call.data == "average":
         dialog.mode = "average"
-        # get_data(call.message)
-        bot.send_message(chat_id=call.message.chat.id, text='you have opt average')
+        data = get_data()
+        bot.send_message(chat_id=call.message.chat.id, text=data)
     elif call.data == "games":
         bot.send_message(chat_id=call.message.chat.id, text='Эта часть еще 🚧 🏗 🚧')
     else:
         bot.send_message(chat_id=call.message.chat.id, text='Такого мы еще не проходили. Воспользуйтесь меню')
 
-# @bot.callback_query_handler(func=lambda call: call.data == 'eggs')
-# def work_with_data(call):
-#     bot.send_message(chat_id=call.message.chat.id, text='Напишите число:')
-#     bot.register_next_step_handler(call.message, save_data)
-#
-# # Функция для сохранения данных пользователя
-# 
-# @bot.callback_query_handler(func=lambda call: call.data == 'average')
-# def get_data(call):
-#     pass
 
 # ---------------- local testing ----------------
 if __name__ == '__main__':
